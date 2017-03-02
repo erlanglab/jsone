@@ -214,6 +214,12 @@ encode_test_() ->
               Expected = <<"{\"key\":2}">>,
               ?assertEqual({ok, Expected}, jsone_encode:encode({[{key, 2}]}))
       end},
+     {"object as proplist of tuples of arbitraty length",
+      fun() ->
+              Input = [{a, 1, 2, 3, 4}, {b, 2, 3, 4, 5}],
+              Expected = <<"{\"a\":1,\"b\":2}">>,
+              ?assertEqual({ok, Expected}, jsone_encode:encode(Input))
+      end},
      {"object_key_type option",
       fun () ->
               %% key: atom
@@ -284,10 +290,6 @@ encode_test_() ->
 
               PpExpected = <<"[\n true,\n {\n  \"1\": 2,\n  \"array\": [\n   [\n    [\n     [\n      1\n     ]\n    ]\n   ],\n   {\n    \"ab\": \"cd\"\n   },\n   false\n  ]\n },\n null\n]">>,
               ?assertEqual({ok, PpExpected}, jsone_encode:encode(Input, [{indent, 1}, {space, 1}]))
-      end},
-     {"invalid value",
-      fun () ->
-              ?assertMatch({error, {badarg, _}}, jsone_encode:encode(self()))
       end},
      {"wrong option",
       fun () ->

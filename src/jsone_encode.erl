@@ -131,18 +131,18 @@ value({{json_utf8, T}}, Nexts, Buf, Opt) ->
         error:badarg ->
             ?ERROR(value, [{json_utf8, T}, Nexts, Buf, Opt])
     end;
-value(Value, Nexts, Buf, Opt) when is_pid(Value)     -> string(list_to_binary(pid_to_list(Value)), Nexts, Buf, Opt);
-value(Value, Nexts, Buf, Opt) when is_integer(Value) -> next(Nexts, <<Buf/binary, (integer_to_binary(Value))/binary>>, Opt);
-value(Value, Nexts, Buf, Opt) when is_float(Value)   -> next(Nexts, <<Buf/binary, (float_to_binary(Value, Opt?OPT.float_format))/binary>>, Opt);
-value(Value, Nexts, Buf, Opt) when ?IS_STR(Value)    -> string(Value, Nexts, Buf, Opt);
-value({{_,_,_},{_,_,_}} = Value, Nexts, Buf, Opt)    -> datetime(Value, Nexts, Buf, Opt);
-value({Value}, Nexts, Buf, Opt)                      -> object(Value, Nexts, Buf, Opt);
-value([{}], Nexts, Buf, Opt)                         -> object([], Nexts, Buf, Opt);
-value([{{_,_,_},{_,_,_}}|_] = Value, Nexts, Buf, Opt)-> array(Value, Nexts, Buf, Opt);
-value([{_, _}|_] = Value, Nexts, Buf, Opt)           -> object(Value, Nexts, Buf, Opt);
-value(Value, Nexts, Buf, Opt) when ?IS_MAP(Value)    -> ?ENCODE_MAP(Value, Nexts, Buf, Opt);
-value(Value, Nexts, Buf, Opt) when is_list(Value)    -> array(Value, Nexts, Buf, Opt);
-value(Value, Nexts, Buf, Opt)                        -> ?ERROR(value, [Value, Nexts, Buf, Opt]).
+value(Value, Nexts, Buf, Opt) when is_pid(Value)               -> string(list_to_binary(pid_to_list(Value)), Nexts, Buf, Opt);
+value(Value, Nexts, Buf, Opt) when is_integer(Value)           -> next(Nexts, <<Buf/binary, (integer_to_binary(Value))/binary>>, Opt);
+value(Value, Nexts, Buf, Opt) when is_float(Value)             -> next(Nexts, <<Buf/binary, (float_to_binary(Value, Opt?OPT.float_format))/binary>>, Opt);
+value(Value, Nexts, Buf, Opt) when ?IS_STR(Value)              -> string(Value, Nexts, Buf, Opt);
+value({{_,_,_},{_,_,_}} = Value, Nexts, Buf, Opt)              -> datetime(Value, Nexts, Buf, Opt);
+value({Value}, Nexts, Buf, Opt)                                -> object(Value, Nexts, Buf, Opt);
+value([{}], Nexts, Buf, Opt)                                   -> object([], Nexts, Buf, Opt);
+value([{{_,_,_},{_,_,_}}|_] = Value, Nexts, Buf, Opt)          -> array(Value, Nexts, Buf, Opt);
+value([First|_] = Value, Nexts, Buf, Opt) when is_tuple(First) -> object(Value, Nexts, Buf, Opt);
+value(Value, Nexts, Buf, Opt) when ?IS_MAP(Value)              -> ?ENCODE_MAP(Value, Nexts, Buf, Opt);
+value(Value, Nexts, Buf, Opt) when is_list(Value)              -> array(Value, Nexts, Buf, Opt);
+value(Value, Nexts, Buf, Opt)                                  -> ?ERROR(value, [Value, Nexts, Buf, Opt]).
 
 -spec string(jsone:json_string(), [next()], binary(), opt()) -> encode_result().
 string(<<Str/binary>>, Nexts, Buf, Opt) ->
@@ -316,9 +316,12 @@ object(Members, Nexts, Buf, Opt) ->
     object_members(Members, Nexts, pp_newline(<<Buf/binary, ${>>, Nexts, 1, Opt), Opt).
 
 -spec object_members(jsone:json_object_members(), [next()], binary(), opt()) -> encode_result().
-object_members([],                  Nexts, Buf, Opt) -> next(Nexts, <<(pp_newline(Buf, Nexts, Opt))/binary, $}>>, Opt);
-object_members([{Key, Value} | Xs], Nexts, Buf, Opt) -> object_key(Key, [{object_value, Value, Xs} | Nexts], Buf, Opt);
-object_members(Arg, Nexts, Buf, Opt)                 -> ?ERROR(object_members, [Arg, Nexts, Buf, Opt]).
+object_members([], Nexts, Buf, Opt) -> next(Nexts, <<(pp_newline(Buf, Nexts, Opt))/binary, $}>>, Opt);
+object_members([KV | Xs], Nexts, Buf, Opt) when is_tuple(KV) ->
+    Key = erlang:element(1, KV),
+    Value = erlang:element(2, KV),
+    object_key(Key, [{object_value, Value, Xs} | Nexts], Buf, Opt);
+object_members(Arg, Nexts, Buf, Opt) -> ?ERROR(object_members, [Arg, Nexts, Buf, Opt]).
 
 -spec object_value(jsone:json_value(), jsone:json_object_members(), [next()], binary(), opt()) -> encode_result().
 object_value(Value, Members, Nexts, Buf, Opt) ->
