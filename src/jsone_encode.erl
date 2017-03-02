@@ -131,6 +131,7 @@ value({{json_utf8, T}}, Nexts, Buf, Opt) ->
         error:badarg ->
             ?ERROR(value, [{json_utf8, T}, Nexts, Buf, Opt])
     end;
+value(Value, Nexts, Buf, Opt) when is_pid(Value)     -> string(list_to_binary(pid_to_list(Value)), Nexts, Buf, Opt);
 value(Value, Nexts, Buf, Opt) when is_integer(Value) -> next(Nexts, <<Buf/binary, (integer_to_binary(Value))/binary>>, Opt);
 value(Value, Nexts, Buf, Opt) when is_float(Value)   -> next(Nexts, <<Buf/binary, (float_to_binary(Value, Opt?OPT.float_format))/binary>>, Opt);
 value(Value, Nexts, Buf, Opt) when ?IS_STR(Value)    -> string(Value, Nexts, Buf, Opt);

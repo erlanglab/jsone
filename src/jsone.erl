@@ -63,7 +63,7 @@
 -type json_value()          :: json_number() | json_string() | json_array() | json_object() | json_boolean() | null | json_term().
 -type json_boolean()        :: boolean().
 -type json_number()         :: number().
--type json_string()         :: binary() | atom() | calendar:datetime(). % NOTE: `decode/1' always returns `binary()' value
+-type json_string()         :: binary() | atom() | calendar:datetime() | pid(). % NOTE: `decode/1' always returns `binary()' value
 -type json_array()          :: [json_value()].
 -type json_object()         :: json_object_format_tuple()
                              | json_object_format_proplist()

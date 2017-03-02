@@ -29,6 +29,10 @@ encode_test_() ->
       fun () ->
               ?assertEqual({ok, <<"null">>}, jsone_encode:encode(null))
       end},
+     {"pid",
+      fun () ->
+              ?assertMatch({ok, _}, jsone_encode:encode(self()))
+      end},
 
      %% Numbers: Inline json term
      {"json",
