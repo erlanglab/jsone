@@ -33,6 +33,19 @@ encode_test_() ->
       fun () ->
               ?assertMatch({ok, _}, jsone_encode:encode(self()))
       end},
+     {"port",
+      fun () ->
+              [Port|_] = erlang:ports(),
+              ?assertMatch({ok, _}, jsone_encode:encode(Port))
+      end},
+     {"reference",
+      fun () ->
+              ?assertMatch({ok, _}, jsone_encode:encode(erlang:make_ref()))
+      end},
+     {"fun",
+      fun () ->
+              ?assertMatch({ok, _}, jsone_encode:encode(fun() -> "Hi" end))
+      end},
 
      %% Numbers: Inline json term
      {"json",
